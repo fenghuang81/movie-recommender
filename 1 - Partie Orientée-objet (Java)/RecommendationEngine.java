@@ -105,17 +105,26 @@ public class RecommendationEngine {
 
     }
 
-    // public void generateRecommendations() {
-    //     // Regarder tous les films
-    //     for (Movie movie : movies) {
-    //         if (user.viewedMovie(movie) && ) {
-    //         }
-    //     }
-    // }
+    public void generateRecommendations() {
+        // Regarder tous les films
+        for (Movie movie : movies) {
+            if (user.viewedMovie(movie) && numLikes(movie) >= K) {
+                
+            }
+        }
+    }
 
-    // public int numLikes(Movie movie, ) {
+    public int numLikes(Movie movie) {
+        int numLikes = 0;
 
-    // }
+        for (User user : users) {
+            if (user.likedMovie(movie)) {
+                numLikes++;
+            }
+        }
+
+        return numLikes;
+    }
 
     public static void main(String[] args) {
 
