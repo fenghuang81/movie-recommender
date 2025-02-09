@@ -4,15 +4,26 @@
 // Robert Laganiere, uottawa.ca
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 // this is the (incomplete) class that will generate the recommendations for a user
 public class RecommendationEngine {
 
-    public ArrayList<Movie> movies;
+    // Fiabilité minimale
+    private static final int K = 10;
+    // Aime le film si son évaluation est >= R
+    private static final float R = 3.5f;
+    // Nombre de recommandation (N)
+    private static final int NUM_RECOMMENDATIONS = 20;
+
+    private User user;
+    private List<Movie> movies;
+    private List<User> users;
+    private List<Recommendation> recommendations;
 
     // constructs a recommendation engine from files
-    public RecommendationEngine(String movieFile, String ratingsFile) throws IOException,
-            NumberFormatException {
+    public RecommendationEngine(int userID, String movieFile, String ratingsFile)
+            throws IOException, NumberFormatException {
 
         movies = new ArrayList<Movie>();
         readMovies(movieFile);
@@ -20,9 +31,7 @@ public class RecommendationEngine {
 
     // Reads the Movie csv file of the MovieLens dataset
     // It populates the list of Movies
-    public void readMovies(String csvFile) throws IOException,
-            NumberFormatException {
-
+    public void readMovies(String csvFile) throws IOException, NumberFormatException {
         String line;
         String delimiter = ","; // Assuming values are separated by commas
 
@@ -60,19 +69,62 @@ public class RecommendationEngine {
     }
 
     public int getNumberOfMovies() {
-
         return movies.size();
     }
+
+    public void readRatings(String csvFile) throws IOException, NumberFormatException {
+        String line;
+        String delimiter = ","; // Assuming values are separated by commas
+
+        BufferedReader br = new BufferedReader(new FileReader(csvFile));
+        // Read each line from the CSV file
+        line = br.readLine();
+
+        while ((line = br.readLine()) != null && line.length() > 0) {
+            // Split the line into parts using the delimiter
+            String[] parts = line.split(delimiter);
+            String title;
+
+            if (parts.length < 4)
+                throw new NumberFormatException("Error: Invalid line structure: " + line);
+
+            // parse the ID
+            int movieID = Integer.parseInt(parts[0]);
+
+            // we assume that the first part is the ID
+            // and the last one are genres, the rest is the title
+            title = parts[1];
+            if (parts.length > 3) {
+
+                for (int i = 2; i < parts.length - 1; i++)
+                    title += parts[i];
+            }
+
+            movies.add(new Movie(movieID, title));
+        }
+
+    }
+
+    // public void generateRecommendations() {
+    //     // Regarder tous les films
+    //     for (Movie movie : movies) {
+    //         if (user.viewedMovie(movie) && ) {
+    //         }
+    //     }
+    // }
+
+    // public int numLikes(Movie movie, ) {
+
+    // }
 
     public static void main(String[] args) {
 
         try {
 
-            RecommendationEngine rec = new RecommendationEngine(args[0], "");
+            RecommendationEngine rec = new RecommendationEngine(Integer.parseInt(args[0]), args[1], args[2]);
 
             // just printing few movies
             for (int i = 0; i < 20; i++) {
-
                 System.out.println(rec.getMovie(i).toString());
             }
 
