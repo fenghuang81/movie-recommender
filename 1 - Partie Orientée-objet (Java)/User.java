@@ -45,4 +45,8 @@ public class User {
         return likedMovie(movie) || dislikedMovie(movie);
     }
 
+    public int numMoviesViewed() {
+        return likedMovies.size() + dislikedMovies.size();
+    }
+
 }

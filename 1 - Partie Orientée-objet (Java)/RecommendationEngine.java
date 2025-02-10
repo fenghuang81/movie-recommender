@@ -134,14 +134,25 @@ public class RecommendationEngine {
         return numLikes;
     }
 
-    // public float jaccard(User user1, User user2) {
-    //     int bothLiked;
-    //     int bothDisliked;
+    public float jaccard(User user1, User user2) {
+        int bothLiked = 0;
+        int bothDisliked = 0;
 
-    //     for (Movie movie : user1.l) {
 
-    //     }
-    // }
+        for (Movie movie : user1.getLikedMovies()) {
+            if (user2.likedMovie(movie)) {
+                bothLiked++;
+            }
+        }
+
+        for (Movie movie : user1.getDislikedMovies()) {
+            if (user2.dislikedMovie(movie)) {
+                bothLiked++;
+            }
+        }
+
+        return (bothLiked + bothDisliked) / (user1.numMoviesViewed() + user2.numMoviesViewed());
+    }
 
     public static void main(String[] args) {
 
