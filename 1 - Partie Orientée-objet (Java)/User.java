@@ -25,12 +25,20 @@ public class User {
         return likedMovies.contains(movie);
     }
 
+    public List<Movie> getLikedMovies() {
+        return likedMovies;
+    }
+
     public void addDislikedMovie(Movie movie) {
         dislikedMovies.add(movie);
     }
 
     public boolean dislikedMovie(Movie movie) {
         return dislikedMovies.contains(movie);
+    }
+
+    public List<Movie> getDislikedMovies() {
+        return dislikedMovies;
     }
 
     public boolean viewedMovie(Movie movie) {

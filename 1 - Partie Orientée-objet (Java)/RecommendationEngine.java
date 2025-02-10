@@ -16,7 +16,7 @@ public class RecommendationEngine {
     // Nombre de recommandation (N)
     private static final int NUM_RECOMMENDATIONS = 20;
 
-    private User user;
+    private User userU;
     private List<Movie> movies;
     private List<User> users;
     private List<Recommendation> recommendations;
@@ -108,8 +108,16 @@ public class RecommendationEngine {
     public void generateRecommendations() {
         // Regarder tous les films
         for (Movie movie : movies) {
-            if (user.viewedMovie(movie) && numLikes(movie) >= K) {
-                
+            if (userU.viewedMovie(movie) && numLikes(movie) >= K) {
+                int score = 0;
+                int numMoviesLiked = 0;
+
+                for (User user : users) {
+                    if (user != userU && user.likedMovie(movie)) {
+                        score += jaccard(userU, user);
+                        numMoviesLiked++;
+                    }
+                }
             }
         }
     }
@@ -125,6 +133,15 @@ public class RecommendationEngine {
 
         return numLikes;
     }
+
+    // public float jaccard(User user1, User user2) {
+    //     int bothLiked;
+    //     int bothDisliked;
+
+    //     for (Movie movie : user1.l) {
+
+    //     }
+    // }
 
     public static void main(String[] args) {
 
