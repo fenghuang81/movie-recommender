@@ -1,4 +1,4 @@
-public class Recommendation {
+public class Recommendation implements Comparable<Recommendation> {
     private User user;
     private Movie movie;
     private float score;
@@ -14,5 +14,10 @@ public class Recommendation {
     @Override
     public String toString() {
         return String.format("%s at %f [ %d]", movie.getTitle(), score, nUsers);
+    }
+
+    @Override
+    public int compareTo(Recommendation anotherRecommendation) {
+        return Float.compare(this.score, anotherRecommendation.score);
     }
 }
