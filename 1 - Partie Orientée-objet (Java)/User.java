@@ -1,3 +1,10 @@
+/*
+ * Projet CSI2120/CSI2520
+ * Hiver 2025
+ * Nom : Steven Wu
+ * Numéro d'étudiant : 300370421
+ */
+
 import java.util.ArrayList;
 import java.util.List;
 

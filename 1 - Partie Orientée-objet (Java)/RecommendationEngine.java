@@ -1,7 +1,10 @@
+/*
+ * Projet CSI2120/CSI2520
+ * Hiver 2025
+ * Nom : Steven Wu
+ * Numéro d'étudiant : 300370421
+ */
 
-// Project CSI2120/CSI2520
-// Winter 2025
-// Robert Laganiere, uottawa.ca
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,10 +65,10 @@ public class RecommendationEngine {
                 title = parts[1];
                 if (parts.length > 3) {
                     title = title.substring(1);
-                    
+
                     for (int i = 2; i < parts.length - 1; i++)
                         title += "," + parts[i];
-                    
+
                     title = title.substring(0, title.length() - 1);
                 }
 
@@ -109,7 +112,6 @@ public class RecommendationEngine {
                     users.add(new User(userID));
                 }
 
-                
                 User currentUser = users.get(userID - 1);
                 Movie currentMovie = movies.get(binSearchMovies(movieID));
 

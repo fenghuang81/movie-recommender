@@ -1,6 +1,9 @@
-// Project CSI2120/CSI2520
-// Winter 2025
-// Robert Laganiere, uottawa.ca
+/*
+ * Projet CSI2120/CSI2520
+ * Hiver 2025
+ * Nom : Steven Wu
+ * Numéro d'étudiant : 300370421
+ */
 
 public class Movie {
 
