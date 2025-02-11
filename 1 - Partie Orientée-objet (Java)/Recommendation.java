@@ -11,6 +11,10 @@ public class Recommendation implements Comparable<Recommendation> {
         this.nUsers = nUsers;
     }
 
+    public User getUser() {
+        return user;
+    }
+
     @Override
     public String toString() {
         return String.format("%s at %f [ %d]", movie.getTitle(), score, nUsers);
