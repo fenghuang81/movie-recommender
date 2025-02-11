@@ -27,6 +27,7 @@ public class Movie {
     }
 
     // string representation
+    @Override
     public String toString() {
 
         return "[" + movieID + "]:" + title;
