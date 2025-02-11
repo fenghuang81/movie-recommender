@@ -22,6 +22,6 @@ public class Recommendation implements Comparable<Recommendation> {
 
     @Override
     public int compareTo(Recommendation anotherRecommendation) {
-        return Float.compare(this.score, anotherRecommendation.score);
+        return Float.compare(anotherRecommendation.score, this.score);
     }
 }
