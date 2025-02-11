@@ -123,7 +123,7 @@ public class RecommendationEngine {
     public void generateRecommendations() {
         // Regarder tous les films
         for (Movie movie : movies) {
-            if (userU.viewedMovie(movie) && numLikes(movie) >= K) {
+            if (!userU.viewedMovie(movie) && numLikes(movie) >= K) {
                 float score = 0;
                 int numMovieLikes = 0;
 
@@ -134,9 +134,11 @@ public class RecommendationEngine {
                     }
                 }
 
-                recommendations.add(new Recommendation(userU, movie, score, numMovieLikes));
+                recommendations.add(new Recommendation(userU, movie, score / numMovieLikes, numMovieLikes));
             }
         }
+
+        recommendations.sort(null);
     }
 
     public int numLikes(Movie movie) {
@@ -155,24 +157,39 @@ public class RecommendationEngine {
         float bothLiked = 0;
         float bothDisliked = 0;
 
+        // Trouve le nombre de films aimés par les deux User
         for (Movie movie : user1.getLikedMovies()) {
             if (user2.likedMovie(movie)) {
                 bothLiked++;
             }
         }
 
+        // Trouve le nombre de films non aimés par les deux User
         for (Movie movie : user1.getDislikedMovies()) {
             if (user2.dislikedMovie(movie)) {
-                bothLiked++;
+                bothDisliked++;
             }
         }
 
-        return (bothLiked + bothDisliked) / (user1.numMoviesViewed() + user2.numMoviesViewed());
+        // Les films regardés par user1
+        List<Movie> bothViewedMovies = new ArrayList<>(user1.getLikedMovies()); // Copie superficielle
+        bothViewedMovies.addAll(user1.getDislikedMovies());
+
+        // Les films regardés par user2
+        List<Movie> user2Movies = new ArrayList<>(user2.getLikedMovies()); // Copie superficielle
+        user2Movies.addAll(user2.getDislikedMovies());
+
+        // Enlève les doublons et fusionne les deux
+        bothViewedMovies.removeAll(user2Movies);
+        bothViewedMovies.addAll(user2Movies);
+
+        float out = (bothLiked + bothDisliked) / bothViewedMovies.size();
+        return out;
     }
 
     public int binSearchMovies(int movieID) {
         int left = 0;
-        int right = movies.size() - 1;
+        int right = getNumberOfMovies() - 1;
 
         while (left <= right) {
             int mid = left + (right - left) / 2;
