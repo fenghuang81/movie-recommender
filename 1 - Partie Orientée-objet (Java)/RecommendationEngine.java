@@ -31,6 +31,7 @@ public class RecommendationEngine {
 
         readMovies(movieFile);
         readRatings(ratingsFile);
+        userU = users.get(userID - 1);
 
         generateRecommendations();
     }
@@ -123,7 +124,7 @@ public class RecommendationEngine {
         // Regarder tous les films
         for (Movie movie : movies) {
             if (userU.viewedMovie(movie) && numLikes(movie) >= K) {
-                int score = 0;
+                float score = 0;
                 int numMovieLikes = 0;
 
                 for (User user : users) {
@@ -151,8 +152,8 @@ public class RecommendationEngine {
     }
 
     public float jaccard(User user1, User user2) {
-        int bothLiked = 0;
-        int bothDisliked = 0;
+        float bothLiked = 0;
+        float bothDisliked = 0;
 
         for (Movie movie : user1.getLikedMovies()) {
             if (user2.likedMovie(movie)) {
