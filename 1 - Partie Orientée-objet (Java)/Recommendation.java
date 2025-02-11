@@ -17,7 +17,7 @@ public class Recommendation implements Comparable<Recommendation> {
 
     @Override
     public String toString() {
-        return String.format("%s at %f [ %d]", movie.getTitle(), score, nUsers);
+        return String.format("%s at %.4f [ %d]", movie.getTitle(), score, nUsers);
     }
 
     @Override
