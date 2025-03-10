@@ -220,18 +220,18 @@ func generateMovieRec(wg *sync.WaitGroup, stop <-chan bool, userID int, titles m
 	return outputStream
 }
 
-func seenByUser(movieID int, user User) bool {
+func seenByUser(rec Recommendation, users map[int]User) bool {
 
 	// S'il a aimé
-	for _, likedID := range user.liked {
-		if likedID == movieID {
+	for _, likedID := range users[rec.userID].liked {
+		if likedID == rec.movieID {
 			return true
 		}
 	}
 
 	// S'il n'a pas aimé
-	for _, dislikedID := range user.notLiked {
-		if dislikedID == movieID {
+	for _, dislikedID := range users[rec.userID].notLiked {
+		if dislikedID == rec.movieID {
 			return true
 		}
 	}
@@ -240,48 +240,57 @@ func seenByUser(movieID int, user User) bool {
 	return false
 }
 
-func likedByMinimum(movieID int, users map[int]User, K int) bool {
+func likedByMinimum(rec Recommendation, users map[int]User) bool {
+
 	count := 0
 
+	// Vérifie les utilisateurs jusqu'à ce que 20 aimés sont trouvés
 	for _, user := range users {
 		for _, likedID := range user.liked {
-			if likedID == movieID {
+			if likedID == rec.movieID {
 				count++
-				if count >= K {
+				if count >= minimumLiked {
 					return true
 				}
 			}
 		}
 	}
 
+	// Renvoie false si < 20 sont trouvés
 	return false
 }
 
-// func filter(wg *sync.WaitGroup, stop <-chan bool, inputStream <-chan Recommendation, filter func(User, int) bool, users map[int]User) <-chan Recommendation {
+func filter(
+	wg *sync.WaitGroup,
+	stop <-chan bool,
+	inputStream <-chan Recommendation,
+	filter func(Recommendation, map[int]User) bool,
+	users map[int]User,
+) <-chan Recommendation {
 
-// 	outputStream := make(chan Recommendation)
+	outputStream := make(chan Recommendation)
 
-// 	go func() {
-// 		defer wg.Done()
-// 		defer close(outputStream)
+	go func() {
+		defer wg.Done()
+		defer close(outputStream)
 
-// 		for rec := range inputStream {
+		for rec := range inputStream {
 
-// 			// Saute l'iteration si l'utilisateur a vu le film
-// 			if !filter(users[rec.userID], rec.movieID) {
-// 				continue
-// 			}
+			// Saute l'iteration si bloqué par le filtre
+			if !filter(rec, users) {
+				continue
+			}
 
-// 			select {
-// 			case <-stop:
-// 				return
-// 			case outputStream <- rec:
-// 			}
-// 		}
-// 	}()
+			select {
+			case <-stop:
+				return
+			case outputStream <- rec:
+			}
+		}
+	}()
 
-// 	return outputStream
-// }
+	return outputStream
+}
 
 func main() {
 
