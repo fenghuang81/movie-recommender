@@ -15,8 +15,14 @@ import (
 	"time"
 )
 
+// K
+const minimumLiked int = 10
+
 // movies with rating greater or equal are considered 'liked'
 const iLiked float64 = 3.5
+
+// N
+const numBestRecs int = 20
 
 // Define the Recommendation type
 type Recommendation struct {
@@ -214,23 +220,40 @@ func generateMovieRec(wg *sync.WaitGroup, stop <-chan bool, userID int, titles m
 	return outputStream
 }
 
-func seenByUser(user User, movieID int) bool {
+func seenByUser(movieID int, user User) bool {
 
 	// S'il a aimé
-	for likedID := range user.liked {
+	for _, likedID := range user.liked {
 		if likedID == movieID {
 			return true
 		}
 	}
 
 	// S'il n'a pas aimé
-	for dislikedID := range user.notLiked {
+	for _, dislikedID := range user.notLiked {
 		if dislikedID == movieID {
 			return true
 		}
 	}
 
 	// S'il n'a pas vu le film
+	return false
+}
+
+func likedByMinimum(movieID int, users map[int]User, K int) bool {
+	count := 0
+
+	for _, user := range users {
+		for _, likedID := range user.liked {
+			if likedID == movieID {
+				count++
+				if count >= K {
+					return true
+				}
+			}
+		}
+	}
+
 	return false
 }
 
