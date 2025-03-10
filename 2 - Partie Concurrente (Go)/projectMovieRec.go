@@ -316,7 +316,7 @@ func main() {
 	// synchronization
 	stop := make(chan bool)
 	var wg sync.WaitGroup
-	wg.Add(1)
+	wg.Add(3)
 
 	start := time.Now() // chrono
 
