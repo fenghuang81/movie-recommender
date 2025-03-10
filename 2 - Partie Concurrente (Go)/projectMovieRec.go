@@ -214,6 +214,52 @@ func generateMovieRec(wg *sync.WaitGroup, stop <-chan bool, userID int, titles m
 	return outputStream
 }
 
+func seenByUser(user User, movieID int) bool {
+
+	// S'il a aimé
+	for likedID := range user.liked {
+		if likedID == movieID {
+			return true
+		}
+	}
+
+	// S'il n'a pas aimé
+	for dislikedID := range user.notLiked {
+		if dislikedID == movieID {
+			return true
+		}
+	}
+
+	// S'il n'a pas vu le film
+	return false
+}
+
+// func filter(wg *sync.WaitGroup, stop <-chan bool, inputStream <-chan Recommendation, filter func(User, int) bool, users map[int]User) <-chan Recommendation {
+
+// 	outputStream := make(chan Recommendation)
+
+// 	go func() {
+// 		defer wg.Done()
+// 		defer close(outputStream)
+
+// 		for rec := range inputStream {
+
+// 			// Saute l'iteration si l'utilisateur a vu le film
+// 			if !filter(users[rec.userID], rec.movieID) {
+// 				continue
+// 			}
+
+// 			select {
+// 			case <-stop:
+// 				return
+// 			case outputStream <- rec:
+// 			}
+// 		}
+// 	}()
+
+// 	return outputStream
+// }
+
 func main() {
 
 	fmt.Println("Number of CPUs:", runtime.NumCPU()) // just curious
