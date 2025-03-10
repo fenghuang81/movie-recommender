@@ -220,7 +220,7 @@ func generateMovieRec(wg *sync.WaitGroup, stop <-chan bool, userID int, titles m
 	return outputStream
 }
 
-func seenByUser(rec Recommendation, users map[int]User) bool {
+func seenByUser(rec Recommendation, users map[int]*User) bool {
 
 	// S'il a aimé
 	for _, likedID := range users[rec.userID].liked {
@@ -240,7 +240,7 @@ func seenByUser(rec Recommendation, users map[int]User) bool {
 	return false
 }
 
-func likedByMinimum(rec Recommendation, users map[int]User) bool {
+func likedByMinimum(rec Recommendation, users map[int]*User) bool {
 
 	count := 0
 
@@ -264,8 +264,8 @@ func filter(
 	wg *sync.WaitGroup,
 	stop <-chan bool,
 	inputStream <-chan Recommendation,
-	filter func(Recommendation, map[int]User) bool,
-	users map[int]User,
+	filter func(Recommendation, map[int]*User) bool,
+	users map[int]*User,
 ) <-chan Recommendation {
 
 	outputStream := make(chan Recommendation)
@@ -320,8 +320,14 @@ func main() {
 
 	start := time.Now() // chrono
 
-	// the sequence of filters
+	// Toutes les recommandations de films
 	recChannel := generateMovieRec(&wg, stop, currentUser, titles)
+
+	// The sequence of filters
+	// Supprime les films déjà regardé
+	recChannel = filter(&wg, stop, recChannel, seenByUser, ratings)
+	// Supprime les films qui n'ont pas été regardés par au moins K personnes
+	recChannel = filter(&wg, stop, recChannel, likedByMinimum, ratings)
 
 	for rec := range recChannel {
 		fmt.Println(rec) // oops, do not print to the console when timing
