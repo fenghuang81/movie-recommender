@@ -292,6 +292,80 @@ func filter(
 	return outputStream
 }
 
+func jaccard(user1 *User, user2 *User) float32 {
+	var bothLiked float32 = 0
+	var bothDisliked float32 = 0
+	moviesViewed := make(map[int]bool)
+
+	// Obtient le nombre de films que les deux ont aimés
+	for movieID := range user1.liked {
+		moviesViewed[movieID] = true // Ajoute dans les films regardés
+		if member(movieID, user2.liked) {
+			bothLiked++
+		}
+	}
+
+	// Obtient le nombre de films que les deux n'ont pas aimés
+	for movieID := range user1.notLiked {
+		moviesViewed[movieID] = true // Ajoute dans les films regardés
+		if member(movieID, user2.notLiked) {
+			bothDisliked++
+		}
+	}
+
+	for movieID := range user2.liked {
+		moviesViewed[movieID] = true
+	}
+
+	for movieID := range user2.notLiked {
+		moviesViewed[movieID] = true
+	}
+
+	return (bothLiked + bothDisliked) / float32(len(moviesViewed))
+}
+
+func computeScoreStage(
+	wg *sync.WaitGroup,
+	stop <-chan bool,
+	inputStream <-chan Recommendation,
+	users map[int]*User,
+) <-chan Recommendation {
+
+	outputStream := make(chan Recommendation)
+
+	go func() {
+		defer wg.Done()
+		defer close(outputStream)
+
+		for rec := range inputStream {
+
+			movieID := rec.movieID
+
+			// Parcourt chaque utilisateur
+			for _, user := range users {
+
+				// Si l'utilisateur a aimé le film
+				if member(movieID, user.liked) {
+					// Calcule S(U, V)
+					rec.score += jaccard(users[rec.userID], user)
+					rec.nUsers++
+				}
+			}
+
+			// Calcule P(U, M)
+			rec.score = rec.getProbLike()
+
+			select {
+			case <-stop:
+				return
+			case outputStream <- rec:
+			}
+		}
+	}()
+
+	return outputStream
+}
+
 func main() {
 
 	fmt.Println("Number of CPUs:", runtime.NumCPU()) // just curious
