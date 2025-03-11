@@ -47,11 +47,11 @@ type User struct {
 	notLiked []int // list of movies with ratings < iLiked
 }
 
-func (u User) getUser() int {
+func (u User) getUserID() int {
 	return u.userID
 }
 
-func (u *User) setUser(id int) {
+func (u *User) setUserID(id int) {
 	u.userID = id
 }
 
@@ -221,24 +221,24 @@ func generateMovieRec(wg *sync.WaitGroup, stop <-chan bool, userID int, titles m
 	return outputStream
 }
 
-func seenByUser(rec Recommendation, users map[int]*User) bool {
+func notSeenByUser(rec Recommendation, users map[int]*User) bool {
 
 	// S'il a aimé
 	for _, likedID := range users[rec.userID].liked {
 		if likedID == rec.movieID {
-			return true
+			return false
 		}
 	}
 
 	// S'il n'a pas aimé
 	for _, dislikedID := range users[rec.userID].notLiked {
 		if dislikedID == rec.movieID {
-			return true
+			return false
 		}
 	}
 
 	// S'il n'a pas vu le film
-	return false
+	return true
 }
 
 func likedByMinimum(rec Recommendation, users map[int]*User) bool {
@@ -299,7 +299,7 @@ func jaccard(user1 *User, user2 *User) float32 {
 	moviesViewed := make(map[int]bool)
 
 	// Obtient le nombre de films que les deux ont aimés
-	for movieID := range user1.liked {
+	for _, movieID := range user1.liked {
 		moviesViewed[movieID] = true // Ajoute dans les films regardés
 		if member(movieID, user2.liked) {
 			bothLiked++
@@ -307,18 +307,18 @@ func jaccard(user1 *User, user2 *User) float32 {
 	}
 
 	// Obtient le nombre de films que les deux n'ont pas aimés
-	for movieID := range user1.notLiked {
+	for _, movieID := range user1.notLiked {
 		moviesViewed[movieID] = true // Ajoute dans les films regardés
 		if member(movieID, user2.notLiked) {
 			bothDisliked++
 		}
 	}
 
-	for movieID := range user2.liked {
+	for _, movieID := range user2.liked {
 		moviesViewed[movieID] = true
 	}
 
-	for movieID := range user2.notLiked {
+	for _, movieID := range user2.notLiked {
 		moviesViewed[movieID] = true
 	}
 
@@ -346,12 +346,15 @@ func computeScoreStage(
 			for _, user := range users {
 
 				// Si l'utilisateur a aimé le film
-				if member(movieID, user.liked) {
+				if user.getUserID() != rec.userID && member(movieID, user.liked) {
 					// Calcule S(U, V)
 					rec.score += jaccard(users[rec.userID], user)
 					rec.nUsers++
 				}
 			}
+
+			// P(U, M)
+			rec.score = rec.getProbLike()
 
 			select {
 			case <-stop:
@@ -395,7 +398,7 @@ func mergeAndGenerateBestRecs(
 
 		// Trie le slice avec le P(U, M)
 		sort.Slice(recSlice, func(i, j int) bool {
-			return recSlice[i].getProbLike() < recSlice[j].getProbLike()
+			return recSlice[i].score > recSlice[j].score
 		})
 
 		for _, rec := range recSlice {
@@ -434,7 +437,7 @@ func main() {
 	// synchronization
 	stop := make(chan bool)
 	var wg sync.WaitGroup
-	wg.Add(3)
+	wg.Add(6)
 
 	start := time.Now() // chrono
 
@@ -443,7 +446,7 @@ func main() {
 
 	// The sequence of filters
 	// Supprime les films déjà regardé
-	recChannel = filter(&wg, stop, recChannel, seenByUser, ratings)
+	recChannel = filter(&wg, stop, recChannel, notSeenByUser, ratings)
 	// Supprime les films qui n'ont pas été regardés par au moins K personnes
 	recChannel = filter(&wg, stop, recChannel, likedByMinimum, ratings)
 
@@ -455,6 +458,7 @@ func main() {
 	}
 
 	// Fan in
+	recChannel = mergeAndGenerateBestRecs(&wg, stop, computeStreams)
 
 	for rec := range recChannel {
 		fmt.Println(rec) // oops, do not print to the console when timing
