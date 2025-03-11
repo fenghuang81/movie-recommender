@@ -460,14 +460,19 @@ func main() {
 	// Fan in
 	recChannel = mergeAndGenerateBestRecs(&wg, stop, computeStreams)
 
-	for rec := range recChannel {
-		fmt.Println(rec) // oops, do not print to the console when timing
+	recommendations := [numBestRecs]Recommendation{}
+	for i := range recommendations {
+		recommendations[i] = <-recChannel
 	}
 
 	close(stop) // stop all threads
 	wg.Wait()
 
 	end := time.Now()
+
+	for _, rec := range recommendations {
+		fmt.Println(rec)
+	}
 
 	fmt.Println(ratings[currentUser])
 
