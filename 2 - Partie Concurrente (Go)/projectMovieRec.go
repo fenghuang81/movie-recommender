@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"runtime"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -352,9 +353,52 @@ func computeScoreStage(
 				}
 			}
 
-			// Calcule P(U, M)
-			rec.score = rec.getProbLike()
+			select {
+			case <-stop:
+				return
+			case outputStream <- rec:
+			}
+		}
+	}()
 
+	return outputStream
+}
+
+func mergeAndGenerateBestRecs(
+	wg *sync.WaitGroup,
+	stop <-chan bool,
+	channels []<-chan Recommendation,
+) <-chan Recommendation {
+
+	outputStream := make(chan Recommendation)
+	recSlice := []Recommendation{}
+	var muxGroup sync.WaitGroup
+
+	// Ajout au slice
+	muxGroup.Add(len(channels))
+	for _, ch := range channels {
+		go func() {
+			defer muxGroup.Done()
+
+			for rec := range ch {
+				recSlice = append(recSlice, rec)
+			}
+		}()
+	}
+
+	go func() {
+		defer wg.Done()
+		defer close(outputStream)
+
+		// Attend le transfert dans le slice
+		muxGroup.Wait()
+
+		// Trie le slice avec le P(U, M)
+		sort.Slice(recSlice, func(i, j int) bool {
+			return recSlice[i].getProbLike() < recSlice[j].getProbLike()
+		})
+
+		for _, rec := range recSlice {
 			select {
 			case <-stop:
 				return
@@ -402,6 +446,15 @@ func main() {
 	recChannel = filter(&wg, stop, recChannel, seenByUser, ratings)
 	// Supprime les films qui n'ont pas été regardés par au moins K personnes
 	recChannel = filter(&wg, stop, recChannel, likedByMinimum, ratings)
+
+	// Fan out
+	numStreams := 2
+	computeStreams := make([]<-chan Recommendation, numStreams)
+	for i := range numStreams {
+		computeStreams[i] = computeScoreStage(&wg, stop, recChannel, ratings)
+	}
+
+	// Fan in
 
 	for rec := range recChannel {
 		fmt.Println(rec) // oops, do not print to the console when timing
