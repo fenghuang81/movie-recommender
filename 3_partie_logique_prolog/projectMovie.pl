@@ -29,10 +29,12 @@ display_first_n([H|T], N) :-
     N1 is N - 1,
     display_first_n(T, N1).
 
-% recommendations(User) :- setof(M,L^movie(M,L),Ms),   % generate list of all movie 
-%	prob_movies(User,Ms,Rec),   % compute probabilities for all movies 
-%	sort(2,@>=,Rec,Rec_Sorted), % sort by descending probabilities
-%	number_of_rec(N), display_first_n(Rec_Sorted,N). % display the result
+recommendations(User) :-
+    setof(M,L^movie(M,L),Ms),   % generate list of all movie 
+	prob_movies(User,Ms,Rec),   % compute probabilities for all movies 
+	sort(2,@>=,Rec,Rec_Sorted), % sort by descending probabilities
+	number_of_rec(N),
+    display_first_n(Rec_Sorted,N). % display the result
 
 init :- read_users('ratings.csv'), read_movies('movies.csv').
 test(1):- similarity(33,88,S1), 291 is truncate(S1 * 10000),similarity(44,55,S2), 138 is truncate(S2 * 10000).
@@ -42,6 +44,10 @@ test(4):- seen(32, 1080), \+seen(44, 1080).
 test(5):- prob_movies(44,[1010, 1050, 1080, 2000],Rs), length(Rs,4), display(Rs).
 
 
+% Calcule la similarité entre deux utilisateurs
+% User1 : Utilisateur 1 (ID)
+% User2 : Utilisateur 2 (ID)
+% Sim   : La similarité
 similarity(User1, User2, Sim) :-
     % Obtient les listes de films aimés et non aimés
     user(User1, User1Likes, User1Dislikes),
@@ -63,6 +69,8 @@ similarity(User1, User2, Sim) :-
 
     Sim is (NumCommonLikes + NumCommonDislikes) / NumTotalViewed.
 
+%  Vérifie si le film atteint le nombre minimum d'aimés
+%  Movie: Le film (ID)
 meets_min_liked(Movie) :-
     min_liked(K),
     findall(User, (user(User, Liked, _), member(Movie, Liked)), UsersWhoLiked),
