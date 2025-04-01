@@ -87,6 +87,17 @@ prob(User, Movie, Prob) :-
     length(Similarities, UsersWhoLiked),
     Prob is Score / UsersWhoLiked.
 
+prob_movies(User, Movies, Recs) :-
+    findall(
+        (Title, Prob),
+        (
+            member(Movie, Movies),
+            movie(Movie, Title),
+            prob(User, Movie, Prob)
+        ),
+        Recs
+    ).
+
 liked(Movie, Users, UsersWhoLiked) :-
     findall(
         User,
