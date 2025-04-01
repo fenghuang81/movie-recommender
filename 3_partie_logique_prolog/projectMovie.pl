@@ -82,8 +82,11 @@ meets_min_liked(Movie) :-
 % Prob  : La probabilité
 prob(_, Movie, 0.0) :-
     \+ meets_min_liked(Movie). % < K
+prob(User, Movie, 0.0) :-
+    seen(User, Movie). % Déjà vu le film
 prob(User, Movie, Prob) :-
     meets_min_liked(Movie), % >= K
+    \+ seen(User, Movie), % Pas encore vu le film
     user(User, _, _), % Vérifie que l'utilisateur existe
     findall(
         Sim,
