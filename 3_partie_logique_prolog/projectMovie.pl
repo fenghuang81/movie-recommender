@@ -42,4 +42,23 @@ test(4):- seen(32, 1080), \+seen(44, 1080).
 test(5):- prob_movies(44,[1010, 1050, 1080, 2000],Rs), length(Rs,4), display(Rs).
 
 
-                                   
+similarity(User1, User2, Sim) :-
+    % Obtient les listes de films aimés et non aimés
+    user(User1, User1Likes, User1Dislikes),
+    user(User2, User2Likes, User2Dislikes),
+    
+    % Obtient l'intersection des aimés et non aimés
+    intersection(User1Likes, User2Likes, CommonLikes),
+    intersection(User1Dislikes, User2Dislikes, CommonDislikes),
+    
+    % Obtient tous les films regardés
+    union(User1Likes, User2Likes, TotalLikes),
+    union(User1Dislikes, User2Dislikes, TotalDislikes),
+    union(TotalLikes, TotalDislikes, TotalViewed),
+
+    % Obtient les longueurs de tous des ensembles
+    length(CommonLikes, NumCommonLikes),
+    length(CommonDislikes, NumCommonDislikes),
+    length(TotalViewed, NumTotalViewed),
+
+    Sim is (NumCommonLikes + NumCommonDislikes) / NumTotalViewed.
