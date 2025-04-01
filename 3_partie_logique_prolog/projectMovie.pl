@@ -76,6 +76,10 @@ meets_min_liked(Movie) :-
     findall(User, (user(User, Liked, _), member(Movie, Liked)), UsersWhoLiked),
     length(UsersWhoLiked, Count),
     Count >= K.
+% Calcule la probabilité que l'utilisateur aime un film
+% User  : L'utilisateur
+% Movie : Le film
+% Prob  : La probabilité
 prob(_, Movie, 0.0) :-
     \+ meets_min_liked(Movie). % < K
 prob(User, Movie, Prob) :-
@@ -95,6 +99,10 @@ prob(User, Movie, Prob) :-
     length(Similarities, UsersWhoLiked),
     Prob is Score / UsersWhoLiked.
 
+% Génère la paire (MovieTitle, Prob) pour tous les films dans Movies
+% User   : L'utilisateur
+% Movies : La liste de films
+% Recs   : La liste de recommandations
 prob_movies(User, Movies, Recs) :-
     findall(
         (Title, Prob),
@@ -106,6 +114,10 @@ prob_movies(User, Movies, Recs) :-
         Recs
     ).
 
+% Extrait les utilisateurs dans la listes qui ont aimé le film
+% Movie         : Le film
+% Users         : La liste d'utilisateurs
+% UsersWhoLiked : La liste produit
 liked(Movie, Users, UsersWhoLiked) :-
     findall(
         User,
@@ -117,6 +129,9 @@ liked(Movie, Users, UsersWhoLiked) :-
         UsersWhoLiked
     ).
 
+% Determine si l'utilisateur a vu le film
+% User  : L'utilisateur
+% Movie : Le film
 seen(User, Movie) :-
     user(User, Liked, Disliked),
     (
