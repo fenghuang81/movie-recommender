@@ -62,3 +62,27 @@ similarity(User1, User2, Sim) :-
     length(TotalViewed, NumTotalViewed),
 
     Sim is (NumCommonLikes + NumCommonDislikes) / NumTotalViewed.
+
+meets_min_liked(Movie) :-
+    min_liked(K),
+    findall(User, (user(User, Liked, _), member(Movie, Liked)), UsersWhoLiked),
+    length(UsersWhoLiked, Count),
+    Count >= K.
+prob(_, Movie, 0.0) :-
+    \+ meets_min_liked(Movie). % < K
+prob(User, Movie, Prob) :-
+    meets_min_liked(Movie), % >= K
+    user(User, _, _), % Vérifie que l'utilisateur existe
+    findall(
+        Sim,
+        (
+            user(OtherUser, Liked, _), % L'utilisateur actuel
+            OtherUser \= User, % Utilisateur différent
+            member(Movie, Liked), % Aime le film
+            similarity(User, OtherUser, Sim)
+        ),
+        Similarities
+    ),
+    sum_list(Similarities, Score),
+    length(Similarities, UsersWhoLiked),
+    Prob is Score / UsersWhoLiked.
