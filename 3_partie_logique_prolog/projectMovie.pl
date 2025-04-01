@@ -86,3 +86,14 @@ prob(User, Movie, Prob) :-
     sum_list(Similarities, Score),
     length(Similarities, UsersWhoLiked),
     Prob is Score / UsersWhoLiked.
+
+liked(Movie, Users, UsersWhoLiked) :-
+    findall(
+        User,
+        (
+            member(User, Users), % Dans l'entrée
+            user(User, Liked, _), % Dans le CSV
+            member(Movie, Liked) % Aime le film
+        ),
+        UsersWhoLiked
+    ).
