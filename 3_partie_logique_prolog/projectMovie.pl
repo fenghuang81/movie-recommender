@@ -97,3 +97,11 @@ liked(Movie, Users, UsersWhoLiked) :-
         ),
         UsersWhoLiked
     ).
+
+seen(User, Movie) :-
+    user(User, Liked, Disliked),
+    (
+        member(Movie, Liked)
+        ;
+        member(Movie, Disliked)
+    ).
