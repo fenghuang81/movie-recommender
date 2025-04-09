@@ -57,8 +57,8 @@
        (disliked1 (caddr user1))
        (disliked2 (caddr user2))
 
-       (liked-both (intersection liked1 liked2 ))
-       (disliked-both (intersection liked1 liked2))
+       (liked-both (intersection liked1 liked2))
+       (disliked-both (intersection disliked1 disliked2))
        (watched-both (union (union liked1 disliked1)
                             (union liked2 disliked2))))
     (exact->inexact (/ (+ (length liked-both) (length disliked-both)) (length watched-both)))))
