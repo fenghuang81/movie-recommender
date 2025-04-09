@@ -63,7 +63,9 @@
                             (union liked2 disliked2))))
     (exact->inexact (/ (+ (length liked-both) (length disliked-both)) (length watched-both)))))
 
+; Exemple
 (similarity 1 31 '((1  (260 235 231 216 163 157 151 110 101 50 47 6 3 1) (223 70)) (31 (367 362 356 349 333 260 235 231) (316 296 223)))    )
+
 
 ; Ajoute un nouveau film à la liste courante d'utilisateurs.
 ; Si le rating est pour un nouveau utilisateur, cet utilisateur est créé et ajouté à la liste.
@@ -80,58 +82,50 @@
     ; Si l'utilisateur existe
     (if user
         ; Met à jour l'utilisateur
-        (cons (list user-id
-                    (if liked?
-                        (cons movie (cadr user))
-                        (cadr user))
-                    (if (not liked?)
-                        (cons movie (caddr user))
-                        (caddr user)))
-              other-users)
+        (let update ((remaining users) ; Les utilisateurs après user
+                     (before '())) ; Les utilisateurs avant user
+          (cond ((null? remaining) users)
+                ; Trouvé l'utilisateur
+                ((equal? (caar remaining) user-id)
+                 ; append(before, updated, remaining)
+                 (append
+                  (reverse before)
+                  (list (list user-id
+                              (if liked?
+                                  (cons movie (cadr user))
+                                  (cadr user))
+                              (if (not liked?)
+                                  (cons movie (caddr user))
+                                  (caddr user))))
+                  (cdr remaining)))
+                (else
+                 ; Continue à chercher l'utilisateur
+                 (update (cdr remaining) (cons (car remaining) before)))))
         ; Créer un nouvel utilisateur
-        (cons (list user-id
-                    (if liked? (list movie) '())
-                    (if (not liked?) (list movie) '()))
-              users))))
+        (append users (list (list user-id
+                                  (if liked? (list movie) '())
+                                  (if (not liked?) (list movie) '())))))))
 
 ; Exemple pour la fonction add-rating
 (equal? (add-rating '(31 316 #f) (add-rating '(31 333 #t) '())) '((31 (333) (316))))
 (equal? (add-rating '(31 362 #t) (add-rating '(31 316 #f) (add-rating '(31 333 #t) '()))) '((31 (362 333) (316))))
 
+
 ; Ajoute toutes les évaluations dans une liste à la liste courante des utilisateurs
 ; ratings : liste de ratings
 ; users : liste d'utilisateurs
 (define (add-ratings ratings users)
+  ; Si vide ne change pas
   (if (null? ratings)
       users
-      (let* ((rating (car ratings))
-             (user-id (car rating))
-             (movie (cadr rating))
-             (liked? (caddr rating))
-             (user (assoc user-id users))
-             (other-users (filter (lambda (u) (not (equal? (car u) user-id))) users)))
-        (add-ratings (cdr ratings)
-                     (if user
-                         ; Met à jour l'utilisateur
-                         (cons (list user-id
-                                     (if liked?
-                                         (cons movie (cadr user))
-                                         (cadr user))
-                                     (if (not liked?)
-                                         (cons movie (caddr user))
-                                         (caddr user)))
-                               other-users)
-                         ; Créer un nouvel utilisateur
-                         (cons (list user-id
-                                     (if liked? (list movie) '())
-                                     (if (not liked?) (list movie) '()))
-                               users))))))
+      (add-ratings
+       (cdr ratings)
+       (add-rating (car ratings) users))))
 
 ; Exemple pour la fonction add-ratings
-(add-ratings '((3 44 #f) (3 55 #f) (3 66 #t) (7 44 #f) (3 11 #t) (7 88 #t)) '())
-; '((3 (11 66) (55 44)) (7 (88) (44)))
-(add-ratings Ratings '())
-; '((1 (260 235 231 216 163 157 151 110 101 50 47 6 3 1) (223 70)) (31 (367 362 356 349 333 260 235 231) (316 296 223)))
+(equal? (add-ratings '((3 44 #f) (3 55 #f) (3 66 #t) (7 44 #f) (3 11 #t) (7 88 #t)) '()) '((3 (11 66) (55 44)) (7 (88) (44))))
+(equal? (add-ratings Ratings '()) '((1 (260 235 231 216 163 157 151 110 101 50 47 6 3 1) (223 70)) (31 (367 362 356 349 333 260 235 231) (316 296 223))))
+
 
 ; Retourne l'utilisateur et sa liste de films aimé et non aimé
 ; user-id
@@ -148,5 +142,9 @@
 ; Exemple pour la fonction get-user
 (equal? (get-user 31 (add-ratings Ratings '())) '(31 (367 362 356 349 333 260 235 231) (316 296 223)))
 
+
+(define (get-similarity user1-id user2-id)
+  (similarity user1-id user2-id (add-ratings Ratings '())))
+
 ; finalement
-; (get-similarity 1 31)
+(get-similarity 1 31)
