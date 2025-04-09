@@ -52,14 +52,34 @@
 
 (similarity 1 31 '((1  (260 235 231 216 163 157 151 110 101 50 47 6 3 1) (223 70)) (31 (367 362 356 349 333 260 235 231) (316 296 223)))    )
 
+(define (add-rating rating users)
+  (let*
+      ((user-id (car rating))
+       (movie (cadr rating))
+       (liked? (caddr rating))
+       (user (assoc user-id users))
+       (other-users (filter (lambda (u) (not (equal? (car u) user-id))) users)))
+    ; Si l'utilisateur existe
+    (if user
+        ; Met à jour l'utilisateur
+        (cons (list user-id
+                    (if liked?
+                        (cons movie (cadr user))
+                        (cadr user))
+                    (if (not liked?)
+                        (cons movie (caddr user))
+                        (caddr user)))
+              other-users)
+        (cons (list user-id
+                    (if liked? (list movie) '())
+                    (if (not liked?) (list movie) '()))
+              users))))
+
 ; Exemple pour la fonction add-rating
-; > (add-rating '(31 316 #f) (add-rating '(31 333 #t) '()))
-; ((31 (333) (316)))
-; > (add-rating '(31 362 #t) (add-rating '(31 316 #f) (add-rating '(31 333 #t) '())))
-; ((31 (362 333) (316)))
+(equal? (add-rating '(31 316 #f) (add-rating '(31 333 #t) '())) '((31 (333) (316))))
+(equal? (add-rating '(31 362 #t) (add-rating '(31 316 #f) (add-rating '(31 333 #t) '()))) '((31 (362 333) (316))))
 
 ; Exemple pour la fonction add-ratings
-
 ; > (add-ratings '((3 44 #f) (3 55 #f) (3 66 #t) (7 44 #f) (3 11 #t) (7 88 #t)) '())
 ; ((3 (11 66) (55 44)) (7 (88) (44)))
 
