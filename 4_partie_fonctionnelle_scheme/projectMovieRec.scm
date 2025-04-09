@@ -43,7 +43,7 @@
     (else
      (intersection (cdr list1) list2))))
 
-; Calcule la similarité entre deux personnes
+; Calcule la similarité entre deux personnes à partir d'une liste d'utilisateurs
 ; user1-id
 ; user2-id
 ; users : liste d'utilisateurs
@@ -143,6 +143,7 @@
 (equal? (get-user 31 (add-ratings Ratings '())) '(31 (367 362 356 349 333 260 235 231) (316 296 223)))
 
 
+; Retourne la similarité entre deux utilisateurs
 (define (get-similarity user1-id user2-id)
   (similarity user1-id user2-id (add-ratings Ratings '())))
 
