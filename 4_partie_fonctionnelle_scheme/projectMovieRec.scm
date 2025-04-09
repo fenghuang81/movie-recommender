@@ -114,6 +114,7 @@
 ; Ajoute toutes les évaluations dans une liste à la liste courante des utilisateurs
 ; ratings : liste de ratings
 ; users : liste d'utilisateurs
+; -> liste
 (define (add-ratings ratings users)
   ; Si vide ne change pas
   (if (null? ratings)
@@ -130,6 +131,7 @@
 ; Retourne l'utilisateur et sa liste de films aimé et non aimé
 ; user-id
 ; users : liste d'utilisateurs
+; -> liste
 (define (get-user user-id users)
   (cond
     ; Liste vide
@@ -144,6 +146,9 @@
 
 
 ; Retourne la similarité entre deux utilisateurs
+; user1-id
+; user2-id
+; -> nombre réel
 (define (get-similarity user1-id user2-id)
   (similarity user1-id user2-id (add-ratings Ratings '())))
 
