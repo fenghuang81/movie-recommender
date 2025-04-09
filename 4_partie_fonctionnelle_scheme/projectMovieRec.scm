@@ -133,10 +133,20 @@
 (add-ratings Ratings '())
 ; '((1 (260 235 231 216 163 157 151 110 101 50 47 6 3 1) (223 70)) (31 (367 362 356 349 333 260 235 231) (316 296 223)))
 
-; Exemple pour la fonction add-user
+; Retourne l'utilisateur et sa liste de films aimé et non aimé
+; user-id
+; users : liste d'utilisateurs
+(define (get-user user-id users)
+  (cond
+    ; Liste vide
+    ((null? users) '()) ;
+    ; Trouvé
+    ((equal? (caar users) user-id) (car users))
+    ; Continue à chercher
+    (else (get-user user-id (cdr users)))))
 
-; > (get-user 31 (add-ratings Ratings '()))
-; (31 (367 362 356 349 333 260 235 231) (316 296 223))
+; Exemple pour la fonction get-user
+(equal? (get-user 31 (add-ratings Ratings '())) '(31 (367 362 356 349 333 260 235 231) (316 296 223)))
 
 ; finalement
 ; (get-similarity 1 31)
